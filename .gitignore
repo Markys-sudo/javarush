@@ -1,1 +1,36 @@
 /add_to_ignor
+# Байткод
+*.pyc
+**/__pycache__/
+*.pyo
+*.pyd
+
+# Файли з паролями та секретами
+.env
+credentials.json
+
+# Тимчасові файли
+*.tmp
+*.swp
+*~
+
+# Логи
+logs/*
+*.log
+
+# Теки, що створюються PyCharm
+.idea/
+*.iml
+
+# Теки для тестів
+tests/
+test/
+
+# Віртуальні оточення
+venv/
+env/
+
+# Файли, що створюються під час пакування проекту
+dist/
+build/
+*.egg-info/
