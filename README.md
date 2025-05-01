@@ -1,1 +1,3 @@
 # javarush
+
+coming soon
