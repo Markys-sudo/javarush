@@ -46,12 +46,6 @@ class MonoApi(CurrencyAPI):
         'UAH': 980,
         'USD': 840,
         'EUR': 978,
-        'GBP': 826,
-        'PLN': 985,
-        'CHF': 756,
-        'CZK': 203,
-        'SEK': 752,
-        'CAD': 124
     }
 
     def __init__(self, api_key, name, cache_lifetime_hours = 12):
@@ -105,6 +99,54 @@ class MonoApi(CurrencyAPI):
             print('Валюта не знайдена')
         return None
 
+class PbApi(CurrencyAPI):
+
+    def __init__(self, api_key, name, cache_lifetime_hours = 12):
+        super().__init__(api_key, name, cache_lifetime_hours)
+        self.url = 'https://api.privatbank.ua/p24api/pubinfo?exchange&json&coursid=11'
+
+    def get_currency(self, currency_a='USD', currency_b='UAH'):
+        code_a = currency_a
+        code_b = currency_b
+        if not code_a or not code_b:
+            print(f"Невідома валюта: {currency_a} або {currency_b}")
+            return None
+        cache_key = f'{code_a}_{code_b}'
+        cached = self.get_from_cache(cache_key)
+        if cached:
+            print("З кешу:")
+        else:
+            cached = self.parsing_data(code_a, code_b)
+        if cached:
+            print(cached)
+            print(f"{currency_a.upper()} → {currency_b.upper()}: "
+                  f"{cached['rateBuy']} / {cached.get('rateSell')}")
+            return cached
+        else:
+            print("Дані недоступні")
+            return None
+
+    def parsing_data(self, currency_code_a, currency_code_b):
+        response = requests.get(self.url)
+        self.status_code(response.status_code)
+
+        if response.status_code == 200:
+            data = response.json()
+            for item in data:
+                if (item.get("ccy") == currency_code_a and
+                    item.get("base_ccy") == currency_code_b):
+                    cache_key = f'{currency_code_a}_{currency_code_b}'
+                    self.set_to_cache(cache_key, {
+                        'rateBuy': item.get('buy'),
+                        'rateSell': item.get('sale')
+                    })
+                    return self.get_from_cache(cache_key)
+            print('Валюта не знайдена')
+        return None
+
+
+pb = PbApi('ключ', 'MonoBank', cache_lifetime_hours=12)
+pb.get_currency('EUR', 'UAH')
 
 mono = MonoApi('ключ', 'MonoBank', cache_lifetime_hours=12)
 mono.get_currency('USD', 'UAH')
